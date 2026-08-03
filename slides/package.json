@@ -1,0 +1,28 @@
+{
+  "name": "critter-stack-workshop-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev 01-intro.md --open",
+    "s1": "slidev 01-intro.md --open",
+    "s2": "slidev 02-async-messaging.md --open",
+    "s3": "slidev 03-resiliency-concurrency.md --open",
+    "s4": "slidev 04-data-consistency.md --open",
+    "s5": "slidev 05-modular-monolith.md --open",
+    "s6": "slidev 06-multi-tenancy.md --open",
+    "s7": "slidev 07-observability.md --open",
+    "s8": "slidev 08-testing-devops.md --open",
+    "verify": "node ./verify-snippets.mjs",
+    "build": "npm run verify && node ./build-all.mjs",
+    "export": "node ./export-all.mjs"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.19.0",
+    "@slidev/theme-default": "^0.25.0",
+    "@slidev/theme-seriph": "^0.25.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.62.1"
+  }
+}

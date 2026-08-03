@@ -1,24 +1,78 @@
-version: '3'
+# Infrastructure for the Critter Stack workshop.
+#
+#   docker compose up -d
+#
+# Sections 1-6 only need postgresql and rabbitmq. Section 7 adds the
+# observability stack. Bring that up with:
+#
+#   docker compose --profile observability up -d
+#
+# NOTE: Postgres is on 5440 and Rabbit on 5682, not the defaults. The
+# Marten and Wolverine repositories both run their own containers on the
+# standard ports, and this workshop should never fight with them.
+
 services:
   postgresql:
-    image: ${POSTGRES_IMAGE:-ionx/postgres-plv8:12.8}
+    image: postgres:17-alpine
     ports:
-      - "5432:5432"
+      - "5440:5432"
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-      POSTGRES_DB: marten_testing
+      POSTGRES_DB: workshop
       NAMEDATALEN: 100
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   pgadmin:
     image: dpage/pgadmin4
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: critterstack@devup.com
+      PGADMIN_DEFAULT_EMAIL: critterstack@jasperfx.net
       PGADMIN_DEFAULT_PASSWORD: postgres
+      PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
       - "5050:80"
+
   rabbitmq:
-    image: "rabbitmq:management"
+    image: rabbitmq:4-management
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5682:5672"
+      - "15682:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Section 7 only.
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    profiles: ["observability"]
+    ports:
+      - "16686:16686"   # UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["observability"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: ["observability"]
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin

@@ -1,0 +1,47 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <!-- One place to bump the Critter Stack for the whole workshop. -->
+    <PropertyGroup>
+        <MartenVersion>9.22.2</MartenVersion>
+        <WolverineVersion>6.24.4</WolverineVersion>
+        <PolecatVersion>5.9.1</PolecatVersion>
+    </PropertyGroup>
+
+    <ItemGroup Label="Critter Stack">
+        <PackageVersion Include="Marten" Version="$(MartenVersion)" />
+        <PackageVersion Include="Marten.AspNetCore" Version="$(MartenVersion)" />
+        <PackageVersion Include="Polecat" Version="$(PolecatVersion)" />
+        <PackageVersion Include="WolverineFx" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.Http" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.Http.FluentValidation" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.Http.Marten" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.FluentValidation" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.Marten" Version="$(WolverineVersion)" />
+        <PackageVersion Include="WolverineFx.RabbitMQ" Version="$(WolverineVersion)" />
+
+        <!-- Wolverine 6 moved Roslyn runtime compilation out of the core
+             package. Development and test hosts reference this; production
+             deployments pre-generate with "codegen write" and leave it out,
+             which is what shrinks the deployed image. See section 8. -->
+        <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="$(WolverineVersion)" />
+    </ItemGroup>
+
+    <ItemGroup Label="Supporting">
+        <PackageVersion Include="FluentValidation" Version="12.1.1" />
+        <PackageVersion Include="Spectre.Console" Version="0.55.0" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    </ItemGroup>
+
+    <ItemGroup Label="Testing">
+        <PackageVersion Include="Alba" Version="8.3.0" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageVersion Include="Shouldly" Version="4.3.0" />
+        <PackageVersion Include="xunit.v3" Version="3.1.0" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
+    </ItemGroup>
+
+</Project>

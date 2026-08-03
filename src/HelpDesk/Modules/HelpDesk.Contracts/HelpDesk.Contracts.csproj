@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      The published language. Every module may reference this project.
+      No module may reference another module.
+
+      Nothing in here depends on Marten, Wolverine, or any storage concern -
+      these are contracts, and they have to stay stable while the modules
+      behind them change.
+    -->
+
+</Project>

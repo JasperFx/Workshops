@@ -416,3 +416,12 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Node / Slidev
+node_modules/
+slides/dist/
+slides/dist-pdf/
+.slidev/
+
+# macOS
+.DS_Store

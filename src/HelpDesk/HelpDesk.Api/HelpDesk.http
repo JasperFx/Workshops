@@ -1,0 +1,103 @@
+### The whole cross-module flow, in order. Run these top to bottom.
+###
+### Prerequisites:
+###   docker compose up -d
+###   dotnet run --project src/HelpDesk/HelpDesk.Api
+###   dotnet run --project src/HelpDesk/HelpDesk.Notifications   (separate terminal)
+
+@host = http://localhost:5199
+@userId = 11111111-1111-1111-1111-111111111111
+
+### 1. Register a customer. Publishes CustomerRegistered.
+# @name registerCustomer
+POST {{host}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "Rebel Alliance",
+  "region": "Outer Rim"
+}
+
+### Capture the id from the response above.
+@customerId = {{registerCustomer.response.body.customerId}}
+
+### 2. Set prioritisation rules. Publishes CustomerPrioritiesChanged, which the
+###    Incidents module handles to update its own replica.
+POST {{host}}/api/customers/priorities
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "priorities": { "Database": "Critical" }
+}
+
+### 3. Log an incident. Starts an event stream.
+# @name logIncident
+POST {{host}}/api/incidents
+Content-Type: application/json
+user-id: {{userId}}
+
+{
+  "customerId": "{{customerId}}",
+  "contact": { "channel": "Email", "firstName": "Han", "lastName": "Solo" },
+  "description": "Hyperdrive is making a noise"
+}
+
+###
+@incidentId = {{logIncident.response.body.incidentId}}
+
+### 4. Categorise it. Cascades TryAssignPriority, which finds the Critical rule
+###    and asks for somebody to be paged over Rabbit MQ. Watch the Notifications
+###    console.
+POST {{host}}/api/incidents/{{incidentId}}/categorise
+Content-Type: application/json
+user-id: {{userId}}
+
+{
+  "category": "Database",
+  "version": 1
+}
+
+### 5. Read it back. Priority is now Critical, assigned by another module.
+GET {{host}}/api/incidents/{{incidentId}}
+
+### 6. The same request again with a stale version. Expect 409 Conflict.
+POST {{host}}/api/incidents/{{incidentId}}/categorise
+Content-Type: application/json
+user-id: {{userId}}
+
+{
+  "category": "Network",
+  "version": 1
+}
+
+### 7. Closing before resolving is rejected. Expect 400.
+POST {{host}}/api/incidents/{{incidentId}}/close
+Content-Type: application/json
+user-id: {{userId}}
+
+{}
+
+### 8. Resolve it.
+POST {{host}}/api/incidents/{{incidentId}}/resolve
+Content-Type: application/json
+user-id: {{userId}}
+
+{ "resolution": "Permanent" }
+
+### 9. Close it. Publishes IncidentClosedForBilling.
+POST {{host}}/api/incidents/{{incidentId}}/close
+Content-Type: application/json
+user-id: {{userId}}
+
+{}
+
+### 10. Billing lives in its own store and learned about all of it from one
+###     integration event.
+GET {{host}}/api/billing/customers/{{customerId}}
+
+### 11. The full audit log, free.
+GET {{host}}/api/incidents/{{incidentId}}/history
+
+### 12. Marten writes the stored JSON straight to the response body.
+GET {{host}}/api/incidents/{{incidentId}}/fast

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>EventSourcingQuickstart</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Marten" />
+        <PackageReference Include="Spectre.Console" />
+    </ItemGroup>
+
+</Project>

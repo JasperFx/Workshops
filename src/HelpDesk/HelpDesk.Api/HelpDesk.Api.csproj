@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <ItemGroup>
+        <PackageReference Include="Marten.AspNetCore" />
+        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="WolverineFx.Http.FluentValidation" />
+        <PackageReference Include="WolverineFx.Http.Marten" />
+        <PackageReference Include="WolverineFx.Marten" />
+        <PackageReference Include="WolverineFx.RabbitMQ" />
+
+        <!-- Auto-registers Roslyn code generation when referenced. Drop this
+             reference and pre-generate the code with the "codegen write"
+             command line option for a production build. -->
+        <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The host is the only project that knows every module exists. -->
+        <ProjectReference Include="../Modules/HelpDesk.Billing/HelpDesk.Billing.csproj" />
+        <ProjectReference Include="../Modules/HelpDesk.Contracts/HelpDesk.Contracts.csproj" />
+        <ProjectReference Include="../Modules/HelpDesk.Customers/HelpDesk.Customers.csproj" />
+        <ProjectReference Include="../Modules/HelpDesk.Incidents/HelpDesk.Incidents.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="HelpDesk.Tests" />
+    </ItemGroup>
+
+</Project>

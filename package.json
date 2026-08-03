@@ -1,0 +1,17 @@
+{
+  "name": "critter-stack-workshops",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Critter Stack workshop material - Slidev decks and sample applications",
+  "workspaces": [
+    "slides"
+  ],
+  "comments": {
+    "workspaces": "This field is load-bearing. Slidev sandboxes `<<<` code-snippet imports to the workspace root, and the decks import straight out of ../src. Without it, every code import fails with 'path escapes the project root'."
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace slides",
+    "build": "npm run build --workspace slides",
+    "export": "npm run export --workspace slides"
+  }
+}

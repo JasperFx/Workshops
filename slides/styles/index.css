@@ -1,0 +1,64 @@
+/* Shared look and feel for every workshop deck. */
+
+:root {
+  --cs-accent: #b8562f;      /* critter orange */
+  --cs-accent-soft: #e0894f;
+  --cs-ink: #1f2933;
+  --cs-muted: #6b7280;
+}
+
+html.dark {
+  --cs-ink: #e5e7eb;
+  --cs-muted: #9ca3af;
+}
+
+.slidev-layout h1 {
+  color: var(--cs-accent);
+  font-weight: 700;
+}
+
+.slidev-layout h2 {
+  color: var(--cs-ink);
+  font-weight: 600;
+}
+
+/* Dense bullet lists are the norm in this deck — tighten them up. */
+.slidev-layout ul > li {
+  margin-top: 0.35rem;
+  line-height: 1.45;
+}
+
+.slidev-layout ul ul > li {
+  font-size: 0.9em;
+  color: var(--cs-muted);
+}
+
+/* Code is the point of this workshop, so give it room. */
+.slidev-layout .slidev-code {
+  font-size: 0.82em;
+  line-height: 1.4;
+  border-radius: 6px;
+}
+
+.slidev-layout.cover h1,
+.slidev-layout.intro h1 {
+  font-size: 3.1rem;
+  line-height: 1.1;
+}
+
+table {
+  font-size: 0.85em;
+}
+
+table th {
+  color: var(--cs-accent);
+  text-align: left;
+}
+
+/* Marker for "this is the part people get wrong" callouts. */
+.gotcha {
+  border-left: 4px solid var(--cs-accent);
+  background: rgb(184 86 47 / 8%);
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 6px 6px 0;
+}

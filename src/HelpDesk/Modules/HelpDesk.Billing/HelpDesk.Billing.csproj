@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <!-- Class libraries that expose HTTP endpoints need the ASP.NET Core
+             framework reference; the package references alone don't bring it. -->
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Marten" />
+        <PackageReference Include="WolverineFx.Http" />
+        <PackageReference Include="WolverineFx.Marten" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../HelpDesk.Contracts/HelpDesk.Contracts.csproj" />
+    </ItemGroup>
+
+</Project>

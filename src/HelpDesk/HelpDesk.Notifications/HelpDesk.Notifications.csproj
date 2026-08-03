@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="WolverineFx" />
+        <PackageReference Include="WolverineFx.RabbitMQ" />
+        <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The only thing this process shares with the API is the contract. -->
+        <ProjectReference Include="../Modules/HelpDesk.Contracts/HelpDesk.Contracts.csproj" />
+    </ItemGroup>
+
+</Project>
