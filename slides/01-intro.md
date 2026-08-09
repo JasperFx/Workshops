@@ -481,17 +481,26 @@ Nothing in that method knows about HTTP, Marten, transactions, or Rabbit MQ.
 
 # Unwinding the magic
 
-Wolverine generates the glue at build time. You can read it.
+Wolverine writes the glue code for you — and you can read every line of it.
 
 ```bash
 dotnet run -- codegen preview
 ```
 
-- Middleware is compiled in, not resolved through a pipeline at runtime
+- Middleware is **compiled in**, not resolved through a pipeline on every call
 - `[WolverineBefore]` methods run first and can short-circuit with `ProblemDetails`
 - Side effect types (`IStartStream`, `Events`, `OutgoingMessages`) let handlers
   stay pure and still cause things to happen
 - Fluent Validation slots in as middleware
+
+<div class="pt-4 gotcha">
+
+Marten 9 and Wolverine 6 went **opposite directions** here, which trips people
+up. Marten dropped runtime code generation entirely for source generators.
+Wolverine kept Roslyn, generating at startup by default — `codegen write` moves
+that to build time, and that is what you do for production.
+
+</div>
 
 ---
 

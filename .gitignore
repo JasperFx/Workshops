@@ -425,3 +425,6 @@ slides/dist-pdf/
 
 # macOS
 .DS_Store
+
+# JetBrains Rider
+.idea/
