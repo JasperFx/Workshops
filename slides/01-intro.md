@@ -123,17 +123,17 @@ Using Marten **does not** mean going all-in on event sourcing.
 
 </div>
 
-You can mix, inside one system, in one transaction:
+Mix event-sourced aggregates, plain documents, and EF Core entities in one
+system — and when they share a store, they share a transaction.
 
-- Event-sourced aggregates
-- Plain documents
-- EF Core entities
-- PostgreSQL **or** SQL Server
+The database is a separate choice: **Marten** on PostgreSQL, **Polecat** on
+SQL Server 2025. Same programming model either way; everything we write today
+is Marten.
 
-<div class="pt-6 gotcha">
+<div class="pt-4 gotcha">
 
 This is what makes the modular monolith in section 5 possible. Pick the
-persistence style per module, not per company.
+persistence style per module.
 
 </div>
 
@@ -224,9 +224,18 @@ layout: statement
 - **Schema evolution** is a real, permanent job — events live forever
 - Your team has to learn a genuinely different way to model state
 - "Just look at the table" debugging stops working
-- Deleting data is hard, and GDPR does not care about your log
+- **Right-to-be-forgotten** takes design work against an append-only log
 
-<div class="pt-6 gotcha">
+<div class="pt-4 text-sm opacity-70">
+
+On that last one — Marten has stream archiving and event data masking
+(`AddMaskingRuleForProtectedInformation`) precisely for this. It is a solved
+problem, but only if you decide *which* fields are personal before you have
+five years of history.
+
+</div>
+
+<div class="pt-4 gotcha">
 
 **When it's the wrong answer:** CRUD screens over reference data. A reporting
 database. Anything where nobody will ever ask "how did we get here?"
