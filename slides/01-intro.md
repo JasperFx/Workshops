@@ -52,9 +52,8 @@ The other seven take that service and break it, one production concern at a time
 
 <div class="pt-8 gotcha">
 
-And one more, which is not on the old version of this slide: **teach you when
-not to do any of this.** Every section ends with a "this is the wrong answer
-when…" slide.
+And one more that most vendor talks skip: **teaching you when *not* to do any
+of this.** Every section ends with a "this is the wrong answer when…" slide.
 
 </div>
 
@@ -70,8 +69,9 @@ docker compose up -d
 
 - .NET 10 SDK
 - Docker Desktop
-- Postgres lands on **5440**, Rabbit on **5682** — deliberately off the default
-  ports so this workshop never collides with anything else you have running
+- Postgres comes up on **5440**, Rabbit on **5682** — not the defaults, so this
+  won't fight a PostgreSQL you already have on 5432. Don't go looking for the
+  workshop database there.
 
 <div class="pt-6 text-sm opacity-70">
 
@@ -102,28 +102,29 @@ layout: section
 |---|---|
 | **Marten** | Document database + event store on PostgreSQL |
 | **Polecat** | The same model on SQL Server 2025 |
+| **Fisher** | The same model on SQLite |
 | **Wolverine** | Command execution, messaging, background work, HTTP |
-| **Weasel** | Schema management underneath both |
+| **Weasel** | Database schema management for the stack |
 | **CritterWatch** | Commercial management and observability |
 
 <div class="pt-6">
 
-Shared core in `JasperFx` / `JasperFx.Events`, so Marten and Polecat are
-increasingly the same engine pointed at different databases.
+Shared core in `JasperFx` / `JasperFx.Events`, so Marten, Polecat, and Fisher
+are increasingly the same engine pointed at different databases.
 
 </div>
 
 ---
 
-# The single most misunderstood thing
+# Just to level set
 
 <div class="text-2xl pt-4 pb-8">
 
-Using Marten **does not** mean going all-in on event sourcing.
+Using Marten or Polecat **does not** mean going all-in on event sourcing.
 
 </div>
 
-Mix event-sourced aggregates, plain documents, and EF Core entities in one
+Mix event sourcing, plain documents, good ol' relational tables, and EF Core entities in one
 system — and when they share a store, they share a transaction.
 
 The database is a separate choice: **Marten** on PostgreSQL, **Polecat** on
@@ -218,27 +219,31 @@ layout: statement
 
 ---
 
-# What it costs
+# Conceptual shifts
 
-- Every read model is **eventually consistent** unless you pay for it
-- **Schema evolution** is a real, permanent job — events live forever
-- Your team has to learn a genuinely different way to model state
-- "Just look at the table" debugging stops working
-- **Right-to-be-forgotten** takes design work against an append-only log
+- Modeling state as a sequence of
+  facts, rather than a row you overwrite, is genuinely different
+- De-emphasizing "noun-centric" modeling
+- Leveraging read models rather than querying the raw state
 
-<div class="pt-4 text-sm opacity-70">
+<div class="pt-5 text-sm opacity-70">
 
-On that last one — Marten has stream archiving and event data masking
-(`AddMaskingRuleForProtectedInformation`) precisely for this. It is a solved
-problem, but only if you decide *which* fields are personal before you have
-five years of history.
+Marten and Polecat have models for strong *or* eventual consistency. It's important to be aware of both models and where either is
+valuable
 
 </div>
 
-<div class="pt-4 gotcha">
+---
 
-**When it's the wrong answer:** CRUD screens over reference data. A reporting
-database. Anything where nobody will ever ask "how did we get here?"
+# Event storming the help desk
+
+<div class="flex justify-center">
+  <img src="/event-storming.png" class="max-h-[340px]" alt="Event storming board for the help desk domain" />
+</div>
+
+<div class="text-sm opacity-70 text-center">
+
+Blue commands, orange events, green read models.
 
 </div>
 
@@ -252,6 +257,12 @@ resolved, acknowledged, and closed.
 <div class="pt-4"></div>
 
 <<< ../src/01-quickstarts/EventSourcingQuickstart/Events.cs#sample_incident_events cs {maxHeight:'280px'}
+
+<div class="pt-2 text-sm opacity-70">
+
+Those orange stickies, now compiling.
+
+</div>
 
 ---
 
@@ -272,7 +283,7 @@ resolved, acknowledged, and closed.
 
 <div class="pt-4"></div>
 
-# Appending to it
+## Appending to it
 
 <<< ../src/01-quickstarts/EventSourcingQuickstart/Program.cs#sample_es_appending cs
 
@@ -288,9 +299,33 @@ resolved, acknowledged, and closed.
 
 <<< ../src/01-quickstarts/EventSourcingQuickstart/MutableIncident.cs#sample_incident_aggregate_mutable cs {maxHeight:'380px'}
 
-<div class="pt-2 text-sm opacity-70">
+---
 
-Marten supports both. Pick whichever your team argues about less.
+# Or one Evolve() method for the whole thing
+
+<<< ../src/01-quickstarts/EventSourcingQuickstart/EvolvingIncident.cs#sample_incident_aggregate_evolve cs {maxHeight:'400px'}
+
+---
+
+# Three shapes, one behaviour
+
+| | |
+|---|---|
+| `Create` / `Apply` overloads | Conventional, and the most common |
+| Mutable class, `void Apply` | Same thing for teams that dislike records |
+| Single `Evolve(IEvent e)` | All the folding in one switch |
+
+<div class="pt-5">
+
+All three are found by the **source generator** at compile time — no runtime
+reflection, and all three work under AOT.
+
+</div>
+
+<div class="pt-4 gotcha">
+
+Pick whichever your team argues about less. `Evolve` earns its keep when you
+want one obvious place to decide what happens to an event you don't recognise.
 
 </div>
 
@@ -325,6 +360,137 @@ the answer is "we don't know."
 Append events, read the raw stream, aggregate it live, and rewind it.
 
 </Demo>
+
+---
+
+# When the boundary isn't a stream
+
+Everything so far assumes one stream is one consistency boundary. Plenty of
+invariants don't fit that shape:
+
+- *"A student may not enrol in more than ten courses"* — spans student **and** course
+- *"This email address must be unique"* — spans every user who ever registered
+
+<div class="pt-4">
+
+The usual bad options are to grow the aggregate until it swallows both, or to
+give up and check optimistically and hope.
+
+</div>
+
+<div class="pt-4 gotcha">
+
+**Dynamic Consistency Boundaries** let a command declare its own boundary at
+read time, instead of inheriting one from how you happened to lay out streams.
+
+</div>
+
+---
+
+# DCB in Marten and Polecat
+
+```csharp
+// Tag an event with every identity it touches
+var enrolled = session.Events.BuildEvent(new StudentEnrolled(studentId, courseId));
+enrolled.WithTag(studentId, courseId);
+session.Events.Append(streamId, enrolled);
+
+// Declare the consistency boundary for *this* decision
+var query = new EventTagQuery()
+    .Or<StudentId>(studentId)
+    .Or<CourseId>(courseId);
+
+var boundary = await session.Events
+    .FetchForWritingByTags<StudentCourseEnrollment>(query);
+
+boundary.AppendOne(new AssignmentSubmitted(/* ... */));
+
+// Throws DcbConcurrencyException if anything matching that query
+// was appended since we read
+await session.SaveChangesAsync();
+```
+
+<div class="pt-2 text-sm opacity-70">
+
+Tags are strongly typed. The boundary is the query, not the stream.
+
+</div>
+
+---
+
+# Why we built it, and when to reach for it
+
+<div class="pt-2">
+
+DCB came out of the Axon world, where the store **couldn't** do transactions
+across streams and needed a way around it. Marten and Polecat sit on ACID
+databases and never had that limitation.
+
+</div>
+
+<div class="pt-4">
+
+So here it isn't a workaround — it's a **modelling option**. Use it when the
+invariant genuinely spans entities and forcing one aggregate to own it would
+distort the domain.
+
+</div>
+
+<div class="pt-6 gotcha">
+
+Reach for a single stream first. It is simpler, faster, and right most of the
+time. DCB is there for the cases where it isn't.
+
+</div>
+
+---
+
+# Privacy, GDPR, and an append-only log
+
+<div class="pt-2 pb-4">
+
+The obvious tension: right-to-be-forgotten, meeting a log you promised never
+to rewrite.
+
+</div>
+
+| | |
+|---|---|
+| **Data masking** | Rewrite the personal fields in place, keep the event and its shape |
+| **Stream archiving** | Move a whole stream out of the active tables |
+| **Crypto shredding** | Encrypt per subject, then destroy the key — the event survives, it just stops meaning anything |
+
+<div class="pt-5 text-sm opacity-80">
+
+Masking and archiving are built in today. **[Tayra](https://tayra.dev)** —
+commercial, currently in preview — covers the third: field-level encryption,
+blind indexes so encrypted fields stay queryable, and key destruction for
+erasure.
+
+</div>
+
+<div class="pt-4 gotcha">
+
+The catch is timing, not tooling. All three want you to have decided which
+fields are personal **before** you have five years of history.
+
+</div>
+
+---
+
+# When event sourcing is the wrong answer
+
+- CRUD screens over reference data
+- A reporting database
+- Anything where nobody will ever ask *"how did we get here?"*
+
+<div class="pt-8 text-base">
+
+The test I'd apply: **is the history itself valuable to the business?**
+
+If the answer is no, you are paying for an audit log nobody reads.
+
+</div>
 
 ---
 layout: section

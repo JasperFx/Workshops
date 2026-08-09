@@ -14,6 +14,9 @@ await using var store = DocumentStore.For(opts =>
     // Keep a snapshot of Incident up to date on every append, inside the
     // same transaction as the events. Strong consistency, slower writes.
     opts.Projections.Snapshot<Incident>(SnapshotLifecycle.Inline);
+
+    // The same stream, folded by a single static Evolve() method instead.
+    opts.Projections.Snapshot<EvolvingIncident>(SnapshotLifecycle.Inline);
 });
 #endregion
 
@@ -99,3 +102,8 @@ AnsiConsole.MarkupLine(
     asOfAnHourAgo is null
         ? "[grey]An hour ago this incident did not exist yet.[/]"
         : "[grey]An hour ago this incident already existed.[/]");
+
+AnsiConsole.WriteLine();
+AnsiConsole.MarkupLine("[green]The same stream, folded by a single Evolve():[/]");
+var evolved = await session.LoadAsync<EvolvingIncident>(incidentId);
+Console.WriteLine(JsonSerializer.Serialize(evolved, json));
