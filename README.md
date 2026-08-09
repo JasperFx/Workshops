@@ -18,20 +18,25 @@ Eight hours of material, delivered as four two-hour blocks. See
 
 ## Getting set up
 
+You need the .NET 10 SDK and Docker Desktop.
+
 ```bash
 docker compose up -d
-npm install
 ```
 
-Postgres lands on **5440** and Rabbit on **5682**, not the default ports, so this
-workshop never collides with the containers the Marten and Wolverine
-repositories run.
+Postgres lands on **5440** and Rabbit on **5682**, not the default ports. That
+keeps the workshop from colliding with anything else you already have running —
+including a local Postgres on 5432, which many people have. If you go looking
+for the workshop database on the default port, that is why it isn't there.
 
 Verify the environment:
 
 ```bash
 cd src/01-quickstarts/DocumentQuickstart && dotnet run
 ```
+
+That's everything you need to follow along. Node is only required if you also
+want to run the slide decks yourself — see below.
 
 ## Sample code
 
@@ -44,19 +49,36 @@ cd src/01-quickstarts/DocumentQuickstart && dotnet run
 dotnet test src/HelpDesk/HelpDesk.Tests
 ```
 
-## Running a deck
+## Running the slides
+
+The decks are [Slidev](https://sli.dev). Optional — you don't need them to work
+through the samples — but they're the fastest way to review the material, and
+the code on the slides is imported live from `src/`, so it can't drift.
+
+Needs Node 20+. Once:
 
 ```bash
-npm run dev --workspace slides
+npm install
 ```
 
-Or a specific section — `s1` through `s8`:
+Then open a section, `s1` through `s8`:
 
 ```bash
-npm run s3 --workspace slides
+npm run s1 --workspace slides
 ```
 
-Build all eight to static sites, or export them all to PDF:
+That serves the deck at <http://localhost:3030> and hot-reloads as you edit —
+both the markdown and the C# it imports. Useful keys while presenting:
+
+| | |
+|---|---|
+| `o` | overview grid of every slide |
+| `f` | full screen |
+| `d` | toggle dark mode |
+| `p` | presenter view, with a second window for the audience |
+
+Build all eight decks to static sites, or export them to PDF as a fallback for
+a projector that won't cooperate:
 
 ```bash
 npm run build --workspace slides
