@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "slides", "slides", "{63B781
 		slides\06-multi-tenancy.md = slides\06-multi-tenancy.md
 		slides\07-observability.md = slides\07-observability.md
 		slides\08-testing-devops.md = slides\08-testing-devops.md
+		slides\09-projections.md = slides\09-projections.md
 		slides\package.json = slides\package.json
 		slides\verify-snippets.mjs = slides\verify-snippets.mjs
 		slides\build-all.mjs = slides\build-all.mjs
@@ -59,6 +60,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workshop", "workshop", "{E5
 		src\HelpDesk\README.md = src\HelpDesk\README.md
 		src\HelpDesk\HelpDesk.Api\HelpDesk.http = src\HelpDesk\HelpDesk.Api\HelpDesk.http
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02-projections", "02-projections", "{4CEF3858-7465-2720-5ABC-B52FF2F342A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projections", "src\02-projections\Projections.csproj", "{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -178,6 +183,18 @@ Global
 		{8B8377DE-5BAD-4F18-A4DE-1166D0953EF2}.Release|x64.Build.0 = Release|Any CPU
 		{8B8377DE-5BAD-4F18-A4DE-1166D0953EF2}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B8377DE-5BAD-4F18-A4DE-1166D0953EF2}.Release|x86.Build.0 = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|x64.Build.0 = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Debug|x86.Build.0 = Debug|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x64.ActiveCfg = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x64.Build.0 = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x86.ActiveCfg = Release|Any CPU
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,5 +212,7 @@ Global
 		{8B50AE27-E865-4D00-ABAC-78576A247F6B} = {69D02F34-6636-6B58-F0DA-F9AAA7627B27}
 		{2C21CFCC-50DA-4605-A892-7CD2A2A291E3} = {1CF5BBCD-2480-1E02-28BC-4BC2FFA32CFD}
 		{8B8377DE-5BAD-4F18-A4DE-1166D0953EF2} = {1CF5BBCD-2480-1E02-28BC-4BC2FFA32CFD}
+		{4CEF3858-7465-2720-5ABC-B52FF2F342A6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F} = {4CEF3858-7465-2720-5ABC-B52FF2F342A6}
 	EndGlobalSection
 EndGlobal

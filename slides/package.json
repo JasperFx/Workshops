@@ -12,6 +12,7 @@
     "s6": "slidev 06-multi-tenancy.md --open",
     "s7": "slidev 07-observability.md --open",
     "s8": "slidev 08-testing-devops.md --open",
+    "s9": "slidev 09-projections.md --open",
     "verify": "node ./verify-snippets.mjs",
     "build": "npm run verify && node ./build-all.mjs",
     "export": "node ./export-all.mjs"

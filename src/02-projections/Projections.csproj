@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>Projections</RootNamespace>
+    </PropertyGroup>
+
+    <!--
+      The TeleHealth sample is vendored from the Marten repository
+      (src/DaemonTests/TeleHealth) so the workshop slides can import it by
+      region and it stays compiling. Only the namespace was changed.
+
+      See src/02-projections/README.md before editing anything under TeleHealth/.
+    -->
+
+    <ItemGroup>
+        <PackageReference Include="Marten" />
+    </ItemGroup>
+
+</Project>

@@ -368,7 +368,7 @@ Append events, read the raw stream, aggregate it live, and rewind it.
 Everything so far assumes one stream is one consistency boundary. Plenty of
 invariants don't fit that shape:
 
-- *"A student may not enrol in more than ten courses"* — spans student **and** course
+- *"A student may not enroll in more than ten courses"* — spans student **and** course
 - *"This email address must be unique"* — spans every user who ever registered
 
 <div class="pt-4">
@@ -420,17 +420,9 @@ Tags are strongly typed. The boundary is the query, not the stream.
 
 # Why we built it, and when to reach for it
 
-<div class="pt-2">
-
-DCB came out of the Axon world, where the store **couldn't** do transactions
-across streams and needed a way around it. Marten and Polecat sit on ACID
-databases and never had that limitation.
-
-</div>
-
 <div class="pt-4">
 
-So here it isn't a workaround — it's a **modelling option**. Use it when the
+So here it isn't a workaround — it's a **modeling option**. Use it when the
 invariant genuinely spans entities and forcing one aggregate to own it would
 distort the domain.
 
@@ -637,6 +629,36 @@ layout: section
 
 ---
 
+# That has a name: the Decider pattern
+
+Jérémie Chassaing's formulation of event sourcing as **two pure functions**:
+
+| | |
+|---|---|
+| `decide(state, command) → events` | Given where we are, what *should* happen? |
+| `evolve(state, event) → state` | Given that happened, where are we now? |
+
+<div class="pt-4">
+
+You have already written both:
+
+</div>
+
+- **decide** is the handler — `Post(CategoriseIncident, Incident) → Events`
+- **evolve** is `Apply()` / `Evolve()` on the aggregate
+
+<div class="pt-2"></div>
+
+<div class="gotcha">
+
+Neither one touches a database, a transaction, or a broker. That is not a
+coincidence and it is not framework magic — it is the whole point of the
+pattern, and it is why these handlers unit test with no mocks at all.
+
+</div>
+
+---
+
 # What just happened
 
 - The simplest event-sourcing write on the planet
@@ -654,12 +676,82 @@ Nothing in that method knows about HTTP, Marten, transactions, or Rabbit MQ.
 
 ---
 
+# A-Frame Architecture
+
+<div class="flex justify-center">
+  <img src="/a-frame-architecture.png" class="max-h-[270px]" alt="Wolverine at the apex, with Infrastructure and Domain Logic as the two legs" />
+</div>
+
+<div class="pt-3">
+
+Wolverine is the **conductor** — it talks to the infrastructure, calls your
+domain logic, and keeps those two from ever talking to each other. Neither leg
+depends on the other, so the domain side stays a pure function you can test by
+calling it.
+
+</div>
+
+---
+
+# Compound Handlers
+
+One message, several methods, each with one job. Wolverine wires them together
+and orders them by what feeds what.
+
+| | |
+|---|---|
+| `Load` / `LoadAsync` | Fetch what the decision needs |
+| `Validate` / `Before` | Reject early, short-circuit the rest |
+| `Handle` | The decision — pure, no I/O |
+| `After` / `PostProcess` | Follow-up work |
+| `Finally` | Cleanup, runs regardless |
+
+<div class="pt-4 text-sm opacity-70">
+
+Whatever `Load` returns is available as parameters to everything after it.
+
+</div>
+
+---
+
+# All the I/O in one place
+
+```csharp
+public static class ShipOrderHandler
+{
+    // Runs first. Every database call the handler needs lives here.
+    public static async Task<(Order, Customer)> LoadAsync(
+        ShipOrder command, IDocumentSession session)
+    {
+        var order = await session.LoadAsync<Order>(command.OrderId);
+        var customer = await session.LoadAsync<Customer>(command.CustomerId);
+        return (order, customer);
+    }
+
+    // ...so this stays a pure function of its inputs.
+    public static IEnumerable<object> Handle(
+        ShipOrder command, Order order, Customer customer)
+    {
+        yield return new MailOvernight(order.Id);
+    }
+}
+```
+
+<div class="pt-2 gotcha">
+
+The A-Frame in one class: `LoadAsync` is the infrastructure leg, `Handle` is
+the domain leg, Wolverine is the apex.
+
+</div>
+
+---
+
 # Unwinding the magic
 
 Wolverine writes the glue code for you — and you can read every line of it.
 
 ```bash
-dotnet run -- codegen preview
+dotnet run codegen preview
 ```
 
 - Middleware is **compiled in**, not resolved through a pipeline on every call
