@@ -768,8 +768,8 @@ route.
 
 <div class="pt-3 text-sm opacity-70">
 
-Works against Marten, EF Core, and RavenDb. `[WriteAggregate]` from earlier is
-the event-sourced member of the same family.
+Works against Marten, EF Core, RavenDb, and CosmosDB. `[WriteAggregate]` from
+earlier is the event-sourced member of the same family.
 
 </div>
 

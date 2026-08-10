@@ -473,11 +473,114 @@ in parallel across nodes.
 
 </div>
 
-<div class="pt-4 text-sm opacity-60">
+---
 
-TODO — "side effect gating" for the catch-up phase. I could not find a feature
-by that name in the Marten repo or docs; needs Jeremy's input on what it is
-called and whether it has shipped.
+# The catch-up problem
+
+Green starts at zero and replays your whole history. Every projection with a
+`RaiseSideEffects` override now re-emits **everything blue already emitted**.
+
+<div class="pt-4"></div>
+
+Ten thousand congratulation emails. A month of duplicate billing events. All
+because you bumped a version number.
+
+<div class="pt-6 gotcha">
+
+This is the reason "just version the projection" is not, on its own, a
+deployment strategy.
+
+</div>
+
+---
+
+# The side-effect gate
+
+```csharp
+opts.Projections.Snapshot<Trip>(SnapshotLifecycle.Async, o =>
+{
+    // Opt in, per projection
+    o.GateSideEffectsBehindPriorVersion = true;
+});
+```
+
+When a **new version** starts and a **prior version's progression row is ahead
+of it**, the new version catches up to that mark with side effects
+**suppressed** — and only starts emitting past the mark.
+
+<div class="pt-4">
+
+So `RaiseSideEffects` fires exactly once per event, for the events the previous
+version never reached. Off by default.
+
+</div>
+
+---
+
+# Two details that make it safe
+
+**The gate lifts on *committed* progression, not enqueued.** Committed is what
+the next startup re-reads, so a crash mid-warm-up is not special: the trigger is
+*persisted progress < mark*, so it resumes still suppressed over what's left
+rather than replaying and re-emitting.
+
+<div class="pt-4"></div>
+
+**The loading ceiling is clamped to the mark** while suppressed. Otherwise a
+page could straddle it, and you'd have to choose between re-emitting what blue
+already sent and dropping what green alone owes.
+
+<div class="pt-5 text-sm opacity-70">
+
+Neither is something you configure. They are why the feature is trustworthy.
+
+</div>
+
+---
+
+# Operating it at scale
+
+A gated shard **starts in milliseconds** like any other — registered,
+assignable, heartbeating — and does its warm-up as a started agent.
+
+<div class="pt-3"></div>
+
+| | |
+|---|---|
+| `ShardState.SideEffectsSuppressed` | "running, but not emitting yet" |
+| `ShardState.SideEffectGateMark` | how far it has to get |
+| `DaemonSettings.MaxConcurrentSideEffectGateWarmupsPerDatabase` | pace the warm-ups |
+
+<div class="pt-4 gotcha">
+
+That throttle exists because of a real deployment: 993 tenant shards, 65
+concurrent warm-ups, and no knob to turn. Set it before you need it.
+
+</div>
+
+---
+
+# Version check
+
+<div class="pt-2"></div>
+
+| | |
+|---|---|
+| `GateSideEffectsBehindPriorVersion` | shipped — in the version this workshop uses |
+| Non-blocking start, throttle, `ShardState` fields | newer |
+| `DaemonSettings.SideEffectGateTimeout` | **obsolete and ignored** |
+
+<div class="pt-5">
+
+The original shape ran the warm-up *inside* the agent start path, so a gated
+shard wasn't assignable until it finished — which looked exactly like a stuck
+deploy. If you are on an older build, that is what you'll see.
+
+</div>
+
+<div class="pt-4 text-sm opacity-70">
+
+<https://github.com/JasperFx/jasperfx/pull/615>
 
 </div>
 
