@@ -746,6 +746,63 @@ the domain leg, Wolverine is the apex.
 
 ---
 
+# Or skip the loading method entirely
+
+`[Entity]` does the same job declaratively — Wolverine works out the identity
+and fetches it before your handler runs.
+
+```csharp
+[WolverinePost("/api/todo/update")]
+public static Update<Todo> Handle(
+    RenameTodo command,
+    [Entity] Todo todo)          // loaded using command.Id
+{
+    todo.Name = command.Name;
+    return Storage.Update(todo);
+}
+```
+
+It finds the id by looking, in order, for an explicit `[Entity("name")]`, then
+a `{EntityType}Id` member, then anything called `id` — on the message *or* the
+route.
+
+<div class="pt-3 text-sm opacity-70">
+
+Works against Marten, EF Core, and RavenDb. `[WriteAggregate]` from earlier is
+the event-sourced member of the same family.
+
+</div>
+
+---
+
+# Missing entities, and where the id comes from
+
+Required by default. A miss logs and exits cleanly in a message handler, or
+returns **404** from an HTTP endpoint — no null check needed.
+
+```csharp
+[WolverinePost("/api/todo/maybecomplete")]
+public static IStorageAction<Todo> Handle(
+    MaybeCompleteTodo command,
+    [Entity(Required = false)] Todo? todo)
+{
+    if (todo == null) return Storage.Nothing<Todo>();
+
+    todo.IsComplete = true;
+    return Storage.Update(todo);
+}
+```
+
+<div class="pt-2 gotcha">
+
+`ValueSource` pins down where the id may come from — `InputMember`,
+`RouteValue`, `FromQueryString`, `Header`, `Claim`. Use a `Load` method when
+the fetch is interesting; `[Entity]` when it is just "get me this by id."
+
+</div>
+
+---
+
 # Unwinding the magic
 
 Wolverine writes the glue code for you — and you can read every line of it.
