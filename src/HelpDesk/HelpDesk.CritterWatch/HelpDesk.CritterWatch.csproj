@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <ItemGroup>
+        <PackageReference Include="CritterWatch" />
+        <PackageReference Include="WolverineFx.RabbitMQ" />
+        <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    </ItemGroup>
+
+</Project>

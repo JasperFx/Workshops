@@ -21,6 +21,10 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: workshop
       NAMEDATALEN: 100
+    volumes:
+      # Creates the separate "critterwatch" database on first start. Only the
+      # optional AppHost fleet uses it; everything else shares "workshop".
+      - ./infra/init-critterwatch-db.sh:/docker-entrypoint-initdb.d/init-critterwatch-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s

@@ -9,6 +9,8 @@
         <MartenVersion>9.22.2</MartenVersion>
         <WolverineVersion>6.24.4</WolverineVersion>
         <PolecatVersion>5.9.1</PolecatVersion>
+        <CritterWatchVersion>1.0.0-rc.9</CritterWatchVersion>
+        <AspireVersion>13.4.6</AspireVersion>
     </PropertyGroup>
 
     <ItemGroup Label="Critter Stack">
@@ -28,6 +30,14 @@
              deployments pre-generate with "codegen write" and leave it out,
              which is what shrinks the deployed image. See section 8. -->
         <PackageVersion Include="WolverineFx.RuntimeCompilation" Version="$(WolverineVersion)" />
+    </ItemGroup>
+
+    <ItemGroup Label="CritterWatch and Aspire">
+        <!-- Prerelease. Used only by the optional AppHost fleet for the
+             section 3 and section 7 demos; nothing else depends on them. -->
+        <PackageVersion Include="Wolverine.CritterWatch" Version="$(CritterWatchVersion)" />
+        <PackageVersion Include="CritterWatch" Version="$(CritterWatchVersion)" />
+        <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(AspireVersion)" />
     </ItemGroup>
 
     <ItemGroup Label="Supporting">

@@ -16,6 +16,7 @@ using Wolverine.FluentValidation;
 using Wolverine.Http;
 using Wolverine.Http.FluentValidation;
 using Wolverine.Marten;
+using Wolverine.CritterWatch;
 using Wolverine.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,6 +98,15 @@ builder.UseWolverine(opts =>
     // queue -- and moving any of them out is a change to *this* file only.
     opts.PublishMessage<NotificationRequested>()
         .ToRabbitExchange("notifications");
+
+    #region sample_critterwatch_monitoring
+    // Report to CritterWatch over the transport we already have. The observer
+    // library is MIT licensed and read-only monitoring needs no licence key
+    // on the service -- so this line is safe to leave on everywhere.
+    opts.AddCritterWatchMonitoring(
+        critterWatchUri: new Uri("rabbitmq://queue/critterwatch"),
+        systemControlUri: new Uri("rabbitmq://queue/helpdesk-control"));
+    #endregion
 });
 #endregion
 

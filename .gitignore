@@ -428,3 +428,6 @@ slides/dist-pdf/
 
 # JetBrains Rider
 .idea/
+
+# Aspire / local secrets
+**/appsettings.Local.json

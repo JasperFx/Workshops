@@ -40,8 +40,11 @@ POST {{host}}/api/scheduling/burst/20
 GET {{host}}/api/scheduling/status
 
 
-### --- 3. Hard down: trip the circuit breaker -----------------------------
-### Every call now throws SchedulingServiceDownException.
+### --- 3. Hard down: PauseThenRequeue stops the queue immediately ---------
+### Every call now throws SchedulingServiceDownException, whose policy is
+### PauseThenRequeue(30s). Note what happens: the queue pauses after the FIRST
+### failure. It does not wait for a percentage, because we already told it this
+### exception means "the whole service is down."
 POST {{host}}/api/scheduling/faults
 Content-Type: application/json
 
@@ -50,12 +53,34 @@ Content-Type: application/json
 ###
 POST {{host}}/api/scheduling/reset
 
-### Fire 40. Watch the console: the failure percentage crosses the threshold,
-### the breaker trips, and the listener latches with the rest still queued.
+### Fire 40. Attempts stop at 1 or 2 -- the queue pauses almost at once.
 POST {{host}}/api/scheduling/burst/40
 
-### Attempts stop climbing even though messages are still waiting. That is the
-### breaker doing its job -- not hammering a service that is clearly down.
+###
+GET {{host}}/api/scheduling/status
+
+
+### --- 3b. The circuit breaker, on its own terms --------------------------
+### The breaker measures a failure PERCENTAGE over a window, so it needs an
+### exception that keeps failing rather than one that stops the queue outright.
+### Flaky at 100% throws TechnicianOfflineException, which retries three times
+### and then dead-letters -- so failures accumulate and the breaker trips.
+###
+### Two mechanisms, both of which pause a queue. Knowing which one fired is the
+### difference between "we configured this" and "something happened."
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "Flaky", "flakyPercentage": 100 }
+
+###
+POST {{host}}/api/scheduling/reset
+
+### Fire 30. Watch for "Pausing message listening" followed by "listener is
+### latched" with messages still queued.
+POST {{host}}/api/scheduling/burst/30
+
+###
 GET {{host}}/api/scheduling/status
 
 

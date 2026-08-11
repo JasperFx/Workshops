@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Aspire 13 ships as an MSBuild SDK. The old <IsAspireHost> property
+         pulls in the deprecated workload and fails the build outright. -->
+    <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.6" />
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <UserSecretsId>helpdesk-apphost</UserSecretsId>
+    </PropertyGroup>
+
+    <!--
+      A launcher, and nothing more. Postgres and Rabbit still come from
+      docker-compose.yml at the root of the repository - this only starts the
+      three .NET processes together so the section 3 demo and CritterWatch are
+      one command instead of three terminals.
+    -->
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../HelpDesk.Api/HelpDesk.Api.csproj" />
+        <ProjectReference Include="../HelpDesk.Notifications/HelpDesk.Notifications.csproj" />
+        <ProjectReference Include="../HelpDesk.CritterWatch/HelpDesk.CritterWatch.csproj" />
+    </ItemGroup>
+
+</Project>
