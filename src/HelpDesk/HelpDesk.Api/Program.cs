@@ -7,6 +7,7 @@ using HelpDesk.Billing;
 using HelpDesk.Contracts;
 using HelpDesk.Customers;
 using HelpDesk.Incidents;
+using HelpDesk.Scheduling;
 using JasperFx;
 using JasperFx.Resources;
 using Marten;
@@ -66,6 +67,7 @@ builder.UseWolverine(opts =>
     opts.Discovery.IncludeAssembly(typeof(IncidentsModule).Assembly);
     opts.Discovery.IncludeAssembly(typeof(CustomersModule).Assembly);
     opts.Discovery.IncludeAssembly(typeof(BillingModule).Assembly);
+    opts.Discovery.IncludeAssembly(typeof(SchedulingModule).Assembly);
 
     opts.Policies.AutoApplyTransactions();
 
@@ -78,6 +80,10 @@ builder.UseWolverine(opts =>
 
     // Prioritisation must not race with itself for a single incident.
     opts.LocalQueueFor<TryAssignPriority>().Sequential();
+
+    // Circuit breaker, retry policies and execution timeouts for the
+    // deliberately unreliable technician scheduling service. See section 3.
+    SchedulingModule.ConfigureWolverine(opts);
 
     var rabbit = builder.Configuration.GetSection("RabbitMq");
     opts.UseRabbitMq(factory =>
@@ -106,6 +112,7 @@ builder.Services.ConfigureHttpJsonOptions(json =>
     json.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+builder.Services.AddScheduling();
 builder.Services.AddWolverineHttp();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

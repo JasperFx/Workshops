@@ -20,6 +20,7 @@
         <ProjectReference Include="../Modules/HelpDesk.Contracts/HelpDesk.Contracts.csproj" />
         <ProjectReference Include="../Modules/HelpDesk.Customers/HelpDesk.Customers.csproj" />
         <ProjectReference Include="../Modules/HelpDesk.Incidents/HelpDesk.Incidents.csproj" />
+        <ProjectReference Include="../Modules/HelpDesk.Scheduling/HelpDesk.Scheduling.csproj" />
     </ItemGroup>
 
     <ItemGroup>

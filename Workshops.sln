@@ -65,6 +65,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02-projections", "02-projec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Projections", "src\02-projections\Projections.csproj", "{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelpDesk.Scheduling", "src\HelpDesk\Modules\HelpDesk.Scheduling\HelpDesk.Scheduling.csproj", "{BA31196A-8BE0-4362-82A7-17703EB2F574}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -195,6 +197,18 @@ Global
 		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x64.Build.0 = Release|Any CPU
 		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x86.ActiveCfg = Release|Any CPU
 		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F}.Release|x86.Build.0 = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|x64.Build.0 = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Debug|x86.Build.0 = Debug|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|x64.ActiveCfg = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|x64.Build.0 = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|x86.ActiveCfg = Release|Any CPU
+		{BA31196A-8BE0-4362-82A7-17703EB2F574}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -214,5 +228,6 @@ Global
 		{8B8377DE-5BAD-4F18-A4DE-1166D0953EF2} = {1CF5BBCD-2480-1E02-28BC-4BC2FFA32CFD}
 		{4CEF3858-7465-2720-5ABC-B52FF2F342A6} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{A9A2A6E2-DCD6-4592-89E4-D95F0829949F} = {4CEF3858-7465-2720-5ABC-B52FF2F342A6}
+		{BA31196A-8BE0-4362-82A7-17703EB2F574} = {69D02F34-6636-6B58-F0DA-F9AAA7627B27}
 	EndGlobalSection
 EndGlobal

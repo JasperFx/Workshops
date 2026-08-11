@@ -124,22 +124,7 @@ layout: section
 
 # Matched by exception type
 
-```csharp
-public static void Configure(HandlerChain chain)
-{
-    chain.OnException<NetworkHiccupException>()
-        .RetryWithCooldown(50.Milliseconds(), 100.Milliseconds())
-        .Then.MoveToErrorQueue();
-
-    chain.OnException<TechnicianOfflineException>().Requeue();
-
-    chain.OnException<ServiceOfflineException>().PauseThenRequeue(30.Minutes());
-
-    chain.OnException<InvalidRequestException>().Discard();
-
-    chain.OnAnyException().MoveToErrorQueue();
-}
-```
+<<< ../src/HelpDesk/Modules/HelpDesk.Scheduling/ScheduleTechnician.cs#sample_scheduling_error_policies cs {maxHeight:'350px'}
 
 <div class="pt-2 text-sm opacity-70">
 
@@ -151,30 +136,31 @@ Policies apply globally, per handler, or per endpoint. This one is per handler.
 
 # Circuit breakers
 
-```csharp
-opts.LocalQueueFor<TryAssignPriority>()
-    .CircuitBreaker(cb =>
-    {
-        cb.PauseTime = 1.Minutes();
-        cb.SamplingPeriod = 2.Minutes();
-        cb.FailurePercentageThreshold = 20;
-
-        cb.Include<TimeoutException>();
-        cb.Exclude<InvalidInputException>();
-    });
-```
-
-Stop hammering something that is clearly down. Include and exclude matter — a
-validation failure is not evidence that the database is unhealthy.
+<<< ../src/HelpDesk/Modules/HelpDesk.Scheduling/SchedulingModule.cs#sample_scheduling_circuit_breaker cs {maxHeight:'360px'}
 
 ---
 
 # Timeouts
 
-- Every handler gets a `CancellationToken` — **use it**
 - Message execution timeouts stop a wedged handler from holding a slot forever
-- Marten command timeouts are configurable per session
+- `opts.DefaultExecutionTimeout` sets the fleet default
+- `[MessageTimeout(seconds)]` overrides it per handler
 - A hung handler with no timeout is indistinguishable from a deadlock
+
+---
+
+# The token is not decoration
+
+<<< ../src/HelpDesk/Modules/HelpDesk.Scheduling/ScheduleTechnician.cs#sample_cancellation_token_handler cs
+
+<div class="pt-3 gotcha">
+
+Wolverine cancels that token when the timeout fires, but the handler is only
+actually interruptible if it **passes the token all the way down** to whatever
+is blocking. A handler that accepts a token and ignores it times out on paper
+and hangs in production.
+
+</div>
 
 ---
 
@@ -331,17 +317,13 @@ opts.LocalQueueFor<SendNotification>()
 
 ---
 
-<Demo path="src/HelpDesk" run="dotnet run">
+<Demo path="src/HelpDesk/HelpDesk.Api/Resiliency.http" run="dotnet run">
 
-A technician-scheduling service that fails on demand. Watch retries, then the
-circuit breaker, then the dead letter queue. Then two concurrent categorise
-commands hitting the same incident.
+A technician-scheduling service that fails on demand. Healthy, then flaky,
+then hard down — watch the breaker latch the queue and the backlog build.
+Then bring it back and watch it drain.
 
 </Demo>
-
-<div class="pt-4 text-sm opacity-60">
-TODO — depends on the HelpDesk sample application.
-</div>
 
 ---
 

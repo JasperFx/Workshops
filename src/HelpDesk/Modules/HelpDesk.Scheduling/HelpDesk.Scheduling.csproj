@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="WolverineFx" />
+        <PackageReference Include="WolverineFx.Http" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../HelpDesk.Contracts/HelpDesk.Contracts.csproj" />
+    </ItemGroup>
+
+</Project>

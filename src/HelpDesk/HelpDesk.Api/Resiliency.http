@@ -1,0 +1,103 @@
+### Section 3 live demo: retries, circuit breaker, dead letters.
+###
+### Run the API, then walk this file top to bottom. Watch the console -- the
+### interesting output is the "Pausing message listening" / "listener is
+### latched" lines, not the HTTP responses.
+
+@host = http://localhost:5199
+
+### --- 1. Healthy baseline -------------------------------------------------
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "None" }
+
+###
+POST {{host}}/api/scheduling/reset
+
+### Fire 10. All 10 succeed.
+POST {{host}}/api/scheduling/burst/10
+
+###
+GET {{host}}/api/scheduling/status
+
+
+### --- 2. Transient failures: retries absorb them -------------------------
+### 40% of calls now throw TechnicianOfflineException, which the handler's
+### policy retries at 50ms, 250ms, then 1s.
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "Flaky", "flakyPercentage": 40 }
+
+###
+POST {{host}}/api/scheduling/reset
+
+### Fire 20. Attempts will exceed 20 -- that difference is the retries.
+POST {{host}}/api/scheduling/burst/20
+
+###
+GET {{host}}/api/scheduling/status
+
+
+### --- 3. Hard down: trip the circuit breaker -----------------------------
+### Every call now throws SchedulingServiceDownException.
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "Down" }
+
+###
+POST {{host}}/api/scheduling/reset
+
+### Fire 40. Watch the console: the failure percentage crosses the threshold,
+### the breaker trips, and the listener latches with the rest still queued.
+POST {{host}}/api/scheduling/burst/40
+
+### Attempts stop climbing even though messages are still waiting. That is the
+### breaker doing its job -- not hammering a service that is clearly down.
+GET {{host}}/api/scheduling/status
+
+
+### --- 4. Recovery ---------------------------------------------------------
+### Bring the service back. After the pause elapses the listener restarts and
+### drains the backlog on its own. Nothing was lost.
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "None" }
+
+###
+GET {{host}}/api/scheduling/status
+
+
+### --- 5. Unretryable: discard, don't retry -------------------------------
+### InvalidSchedulingRequestException can never succeed, so the policy
+### discards it. Note the breaker EXCLUDES this exception -- a bad request is
+### not evidence the service is unhealthy, and should not trip anything.
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "Invalid" }
+
+###
+POST {{host}}/api/scheduling/burst/10
+
+### Failures climb, but the listener keeps running.
+GET {{host}}/api/scheduling/status
+
+
+### --- 6. Hang: the execution timeout earns its keep ----------------------
+### The service accepts the call and never returns. [MessageTimeout(5)]
+### cancels the token, and the handler is interruptible because it passes that
+### token all the way down.
+POST {{host}}/api/scheduling/faults
+Content-Type: application/json
+
+{ "mode": "Hang" }
+
+###
+POST {{host}}/api/scheduling/burst/3
+
+###
+GET {{host}}/api/scheduling/status
