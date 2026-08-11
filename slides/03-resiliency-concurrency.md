@@ -182,12 +182,39 @@ It will eventually meet an event it cannot handle.
 - **Application errors** — a bug in an `Apply` method
 - **Poison pills** — one event that kills the daemon on every restart
 
-Options: skip, log and continue, or stop the projection and alert.
+Three knobs, and Marten sets them **differently for continuous processing than
+for rebuilds**:
 
-<div class="pt-4 gotcha">
+| | Continuous | Rebuild |
+|---|---|---|
+| `SkipApplyErrors` | skip | **stop** |
+| `SkipSerializationErrors` | skip | **stop** |
+| `SkipUnknownEvents` | skip | **stop** |
 
-The default should be *stop and alert* in production. Silently skipping events
-means your read model is quietly wrong, which is worse than being down.
+<div class="pt-4 text-sm opacity-70">
+
+Live, one bad event should not stop every projection you have. During a
+rebuild, anything unexpected should stop you cold — that rebuild is your one
+chance to get the read model exactly right.
+
+</div>
+
+---
+
+# Configuring it
+
+<<< ../src/02-projections/ProjectionErrorHandling.cs#sample_projection_error_handling cs {maxHeight:'380px'}
+
+---
+
+# The case for turning skipping off
+
+<<< ../src/02-projections/ProjectionErrorHandling.cs#sample_projection_errors_strict cs {maxHeight:'330px'}
+
+<div class="pt-3 gotcha">
+
+Whichever way you go, **decide it on purpose**. This is the setting teams
+discover by finding a wrong number in a report six months later.
 
 </div>
 

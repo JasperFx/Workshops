@@ -431,3 +431,6 @@ slides/dist-pdf/
 
 # Aspire / local secrets
 **/appsettings.Local.json
+
+# Wolverine pre-generated code (produced by "codegen write")
+**/Internal/Generated/
