@@ -115,20 +115,55 @@ layout: section
 
 # Open Telemetry
 
-Both tools emit standard `ActivitySource` spans.
+<<< ../src/HelpDesk/HelpDesk.Api/Telemetry.cs#sample_otel_wiring cs {maxHeight:'350px'}
+
+<div class="pt-2 gotcha">
+
+`AddSource` takes `"Wolverine"` and `"Marten"`. `AddMeter` does **not** —
+Wolverine's meter is named per service, so `AddMeter("Wolverine")` compiles,
+runs, and exports nothing.
+
+</div>
+
+---
+
+# Same instrumentation, different destination
+
+Application Insights instead of a collector. The `AddSource` and `AddMeter`
+names do not change — which is rather the point of standardising on OTEL.
 
 ```csharp
-builder.Services.AddOpenTelemetry()
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(ServiceName))
     .WithTracing(t => t
-        .AddSource("Wolverine")
-        .AddSource("Marten")
         .AddAspNetCoreInstrumentation()
-        .AddOtlpExporter());
+        .AddSource("Wolverine")
+        .AddSource("Marten"))
+    .WithMetrics(m => m
+        .AddMeter($"Wolverine:{ServiceName}")
+        .AddMeter("Marten"))
+
+    // One line swaps where it all goes. Nothing above it changes.
+    .UseAzureMonitor(o =>
+    {
+        o.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+    });
 ```
 
-- Wolverine spans: message received, executed, sent, retried, dead-lettered
-- Marten spans: session commits, projection work, daemon activity
+<div class="pt-2 text-sm opacity-70">
+
+Needs `Azure.Monitor.OpenTelemetry.AspNetCore`.
+
+</div>
+
+---
+
+# What Wolverine spans cover
+
+- Message received, executed, sent, retried, dead-lettered
 - Context propagates **across transports** — the trace survives the broker hop
+- Marten spans sit underneath: connections, batches, event appends
 
 ---
 
@@ -153,19 +188,92 @@ you have just lost the ability to debug your own system.
 
 # Metrics
 
-Wolverine publishes meters out of the box:
+Wolverine publishes meters out of the box. Marten publishes far fewer than you
+would expect, and the two are worth separating.
 
-- Messages sent, received, succeeded, failed, dead-lettered
-- Execution duration, per message type
-- **Queue depth and message age** — the two that actually predict an incident
-- Circuit breaker state
+<div class="pt-4"></div>
 
-Marten adds projection lag, daemon health, and connection usage.
+- **Wolverine** — counts, durations, and queue depths, all tagged by message type
+- **Marten** — mostly tracing; counters are yours to define
+
+<div class="pt-6 gotcha">
+
+Projection lag is the number that tells you whether your read models are lying —
+and it is *not* an exported metric. Two slides from now on where it does live.
+
+</div>
+
+---
+
+# What Wolverine actually exports
+
+Meter name: **`Wolverine:{ServiceName}`**
+
+| | |
+|---|---|
+| **Counters** | `-messages-sent` · `-messages-received` · `-messages-succeeded` |
+| | `-execution-failure` · `-dead-letter-queue` |
+| **Histograms** | `-execution-time` (ms) |
+| | `-effective-time` — **sent until executed** |
+| **Gauges** | `-inbox-count` · `-outbox-count` · `-scheduled-count` |
+| | `-database-connection-count` · `-database-connection-budget` |
+
+<div class="pt-3 text-sm opacity-70">
+
+All prefixed `wolverine`. Tagged with `message.type`, `message.destination`,
+`tenant.id`, and `exception.type` on failures.
+
+</div>
+
+---
+
+# The two that predict an incident
+
+<div class="pt-2"></div>
+
+**`wolverine-effective-time`** — how long a message waited between being sent
+and being executed. Rising means you are falling behind, and it rises *before*
+anything actually fails.
+
+<div class="pt-3"></div>
+
+**`wolverine-inbox-count`** — the backlog. In section 3 this is the number that
+climbed while the circuit breaker held the queue latched.
 
 <div class="pt-4 gotcha">
 
-Projection lag is the single most important metric in an event-sourced system.
-It is the number that tells you whether your read models are lying.
+Failure counters tell you what already went wrong. These two tell you what is
+about to.
+
+</div>
+
+---
+
+# What Marten exports
+
+Meter name: **`Marten`** — and it is deliberately thin.
+
+<div class="pt-3"></div>
+
+Most of Marten's telemetry is **tracing**, not metrics — `marten.connection`,
+`marten.batch.execution.started`, `marten.command.execution.started`,
+`marten.event.append`.
+
+<div class="pt-3"></div>
+
+For counters you define what matters to you:
+
+```csharp
+opts.OpenTelemetry.ExportCounterOnChangeSets<int>(
+    "marten.events.appended", "Events",
+    (counter, commit) => counter.Add(commit.GetEvents().Count()));
+```
+
+<div class="pt-3 gotcha">
+
+Worth knowing before you go looking for a projection-lag metric and cannot find
+one. The daemon's progress lives in the database, and CritterWatch is what
+reads it for you.
 
 </div>
 

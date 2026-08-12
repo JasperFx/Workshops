@@ -8,6 +8,9 @@
         <PackageReference Include="WolverineFx.Marten" />
         <PackageReference Include="WolverineFx.RabbitMQ" />
         <PackageReference Include="Wolverine.CritterWatch" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
 
         <!-- Auto-registers Roslyn code generation when referenced. Drop this
              reference and pre-generate the code with the "codegen write"

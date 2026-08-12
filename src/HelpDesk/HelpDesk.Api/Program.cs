@@ -122,6 +122,9 @@ builder.Services.ConfigureHttpJsonOptions(json =>
     json.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
+// Traces and metrics for Wolverine, Marten and ASP.NET Core.
+builder.AddHelpDeskTelemetry();
+
 builder.Services.AddScheduling();
 builder.Services.AddWolverineHttp();
 builder.Services.AddEndpointsApiExplorer();
