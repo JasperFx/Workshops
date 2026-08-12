@@ -331,7 +331,61 @@ opts.LocalQueueFor<SendNotification>()
 
 - Global ordering is expensive and usually unnecessary
 - **Per-stream** ordering is usually what people actually mean
-- Partitioned listeners give you ordering within a key and parallelism across keys
+- Neither line above gives you that — `Sequential()` is too strict and
+  `MaximumParallelMessages` is too loose
+
+---
+
+# What you actually wanted
+
+<div class="pt-2">
+
+Ordering **within** a key, parallelism **across** keys. Wolverine calls the key
+a **GroupId**.
+
+</div>
+
+<<< ../src/HelpDesk/Modules/HelpDesk.Scheduling/Partitioning.cs#sample_partition_by_group_id cs
+
+<div class="pt-3 text-sm opacity-70">
+
+Five slots. A GroupId always lands on the same slot, so its messages are
+ordered — while the other four slots keep working.
+
+</div>
+
+---
+
+# Global partitioning
+
+Per-listener partitioning orders a key **on one node**. Run three nodes and the
+same GroupId can be in flight on all three at once.
+
+<<< ../src/HelpDesk/Modules/HelpDesk.Scheduling/Partitioning.cs#sample_global_partitioning cs {maxHeight:'300px'}
+
+---
+
+# What global partitioning guarantees
+
+<div class="text-xl pt-2 pb-4">
+
+No two messages with the same GroupId ever execute concurrently **anywhere in
+the cluster**.
+
+</div>
+
+- `ByMessage<T>()` and `ByTenantId()` decide how the GroupId is derived
+- Groups spread across named local queues; a group always lands on one slot
+- Enrolling in this **forces the queues to durable mode** — the coordination has
+  to survive a node dying
+
+<div class="pt-4 gotcha">
+
+That last point is the price. You are buying a cluster-wide ordering guarantee
+with durability you might not otherwise have paid for. Per-listener
+partitioning is cheaper and is enough far more often than people expect.
+
+</div>
 
 ---
 
