@@ -11,6 +11,7 @@ using HelpDesk.Scheduling;
 using JasperFx;
 using JasperFx.Resources;
 using Marten;
+using JasperFx.Events.Daemon;
 using Wolverine;
 using Wolverine.FluentValidation;
 using Wolverine.Http;
@@ -47,7 +48,10 @@ builder.Services.AddMarten(opts =>
     })
     // Shares one session, and therefore one transaction, between event appends
     // and outgoing messages. This is what makes the outbox work.
-    .IntegrateWithWolverine();
+    .IntegrateWithWolverine()
+
+    // Runs CustomerIncidentSummaryProjection in the background.
+    .AddAsyncDaemon(DaemonMode.Solo);
 #endregion
 
 #region sample_helpdesk_billing_store

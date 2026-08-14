@@ -129,6 +129,98 @@ it, every async test is a race condition with a timeout.
 
 ---
 
+# What a tracked session holds
+
+The session is sliced by **what happened to a message**, not by its type:
+
+<div class="grid grid-cols-2 gap-x-8 pt-2 text-sm">
+
+<div>
+
+- `Sent`
+- `Received`
+- `Executed`
+- `ExecutionStarted` / `ExecutionFinished`
+- `MessageSucceeded`
+
+</div>
+
+<div>
+
+- `MessageFailed`
+- `Requeued`
+- `MovedToErrorQueue`
+- `NoHandlers` / `NoRoutes`
+- `Scheduled` / `Discarded`
+
+</div>
+
+</div>
+
+<div class="pt-4 text-sm opacity-70">
+
+Plus `AllRecordsInOrder()` and `AllExceptions()` across the whole cascade.
+
+</div>
+
+---
+
+# Reading what happened
+
+<<< ../src/HelpDesk/HelpDesk.Tests/TrackedSessionTests.cs#sample_reading_the_messages_sent cs {maxHeight:'370px'}
+
+<div class="pt-2 text-sm opacity-70">
+
+`AllRecordsInOrder()` is the one to print when a test fails and you have no
+idea why.
+
+</div>
+
+---
+
+# Asserting on what was published
+
+<<< ../src/HelpDesk/HelpDesk.Tests/TrackedSessionTests.cs#sample_asserting_on_messages_sent cs {maxHeight:'380px'}
+
+---
+
+# Why that last test needs no broker
+
+`NotificationRequested` is routed to Rabbit MQ in production. The fixture calls
+`DisableAllExternalWolverineTransports()`, so instead of leaving the process it
+lands in `Sent` — where a test can assert on it.
+
+<div class="pt-4"></div>
+
+| | |
+|---|---|
+| `SingleMessage<T>()` | exactly one, or a useful failure |
+| `MessagesOf<T>()` | all of them |
+| `SingleEnvelope<T>()` | the metadata — destination, headers, tenant |
+
+---
+
+# Tracking waits for messages, not for Marten
+
+<div class="pt-2">
+
+Wolverine's tracking knows nothing about Marten's async daemon. When
+`TrackedHttpCall` returns, every **message** is done — but an **Async
+projection** can still be behind.
+
+</div>
+
+<<< ../src/HelpDesk/HelpDesk.Tests/TrackedSessionTests.cs#sample_waiting_for_marten_async_projections cs {maxHeight:'270px'}
+
+<div class="pt-2 gotcha">
+
+Two different kinds of "async", two different waits. Using only the first is
+the most common cause of a projection test that passes locally and fails in CI.
+
+</div>
+
+---
+
 # Controlling state
 
 ```csharp

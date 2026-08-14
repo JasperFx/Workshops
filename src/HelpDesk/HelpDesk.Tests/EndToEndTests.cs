@@ -63,6 +63,7 @@ public class end_to_end_across_modules(AppFixture fixture) : IntegrationContext(
         await Scenario(x =>
         {
             AsUser(x);
+
             x.Post.Json(new LogIncident(
                     Guid.CreateVersion7(),
                     new Contact(ContactChannel.Email, "Han", "Solo"),

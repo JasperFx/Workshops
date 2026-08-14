@@ -72,11 +72,11 @@ layout: section
 # Two writes, one story
 
 ```csharp
-// Save the incident
-await session.SaveChangesAsync();
-
 // Tell everyone about it
 await bus.PublishAsync(new IncidentLogged(...));
+
+// Save the incident
+await session.SaveChangesAsync();
 ```
 
 <div class="pt-6">
@@ -87,9 +87,9 @@ What if the process dies between line 2 and line 5?
 
 <div class="pt-4">
 
-You have an incident nobody knows about. Swap the order and you have a
-notification about an incident that doesn't exist. There is no ordering of two
-independent writes that is safe.
+You have just told the world about an incident that does not exist. Swap the
+order and you get the opposite failure — an incident nobody was told about.
+There is no ordering of two independent writes that is safe.
 
 </div>
 
