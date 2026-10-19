@@ -52,8 +52,7 @@ The other seven take that service and break it, one production concern at a time
 
 <div class="pt-8 gotcha">
 
-And one more that most vendor talks skip: **teaching you when *not* to do any
-of this.** Every section ends with a "this is the wrong answer when…" slide.
+And for completeness, every section ends with a "this is the wrong answer when…" slide.
 
 </div>
 

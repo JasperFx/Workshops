@@ -281,16 +281,75 @@ reads it for you.
 
 # CritterWatch
 
-The commercial management and observability tool for the Critter Stack.
+Purpose-built for Marten and Wolverine internals, rather than a generic APM
+that can only see HTTP requests and SQL.
 
-- Purpose-built for Marten and Wolverine internals — not generic APM
-- Message flow, dead letter inspection and replay, projection status
-- Operational control, not just dashboards
+<div class="grid grid-cols-2 gap-x-8 pt-3 text-sm">
 
-<div class="pt-6 text-sm opacity-60">
+<div>
 
-TODO — confirm the exact 1.0 feature list and licensing story before delivery,
-and decide whether attendees get hands-on access or this stays a demo.
+- **Health** — nodes, agents, endpoints, tenants
+- **Dead letters** — across services, with stack traces and history
+- **Projections** — shard lag, and a stepper that replays events one at a time
+- **Listeners** — circuit breaker state, back pressure, stalled consumers
+
+</div>
+
+<div>
+
+- **Message flow** — topology across services, Messaging Explorer
+- **Durability** — inbox/outbox health, scheduled messages, event browser
+- **Alerts** — to Slack, Discord, or Teams
+- **MCP server** — so an agent can query and act on your fleet
+
+</div>
+
+</div>
+
+<div class="pt-4 gotcha">
+
+The projection stepper is the one to show people. Replaying a projection event
+by event, watching the document change at each apply, is the answer to "why is
+this number wrong" — and it is not something a generic APM can ever do.
+
+</div>
+
+---
+
+# What's free and what isn't
+
+| | |
+|---|---|
+| **Free, forever, unlimited services** | Read-only monitoring |
+| **Licensed** | Anything that *changes* something |
+| **Professional and up** | Alerts, audit log, multi-tenancy management, custom thresholds |
+
+<div class="pt-4"></div>
+
+"Changes something" means DLQ replay and discard, pausing and restarting
+listeners, projection rebuild and rewind, agent pinning, node eject, tenant
+management, and ChaosMonkey. **The entire MCP server is licensed too**, even
+its read-only tools.
+
+<div class="pt-4 gotcha">
+
+The key goes in **two** places. State-changing actions execute on the monitored
+service, not in the console — so a service without a key will refuse them even
+though the console is licensed. This is the thing people get wrong first.
+
+</div>
+
+---
+
+# Adding it to a service
+
+<<< ../src/HelpDesk/HelpDesk.Api/Program.cs#sample_critterwatch_monitoring cs
+
+<div class="pt-3 text-sm opacity-70">
+
+`Wolverine.CritterWatch` is MIT licensed and read-only monitoring needs no key
+on the service, so that line is safe to leave switched on everywhere. The
+console itself is a drop-in package on an otherwise empty ASP.NET Core site.
 
 </div>
 
@@ -366,15 +425,20 @@ Retries are the system working. Alerting on them trains people to ignore alerts.
 
 ---
 
-<Demo path="src/HelpDesk">
+<Demo path="src/HelpDesk/HelpDesk.AppHost" run="dotnet run">
 
 One HTTP request, traced through Wolverine, Marten, Rabbit MQ, and into the
-notification service. Then the Grafana dashboard, then CritterWatch.
+notification service. Then trip the circuit breaker from section 3 and watch
+the same failure arrive in CritterWatch.
 
 </Demo>
 
-<div class="pt-4 text-sm opacity-60">
-TODO — depends on the HelpDesk sample application and the observability compose profile.
+<div class="pt-4 text-sm opacity-70">
+
+`docker compose --profile observability up -d` first, for Jaeger and Grafana.
+The AppHost starts the API, the notification service, and the CritterWatch
+console together.
+
 </div>
 
 ---
