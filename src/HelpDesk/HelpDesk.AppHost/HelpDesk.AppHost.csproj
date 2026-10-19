@@ -2,7 +2,7 @@
 
     <!-- Aspire 13 ships as an MSBuild SDK. The old <IsAspireHost> property
          pulls in the deprecated workload and fails the build outright. -->
-    <Sdk Name="Aspire.AppHost.Sdk" Version="13.4.6" />
+    <Sdk Name="Aspire.AppHost.Sdk" Version="13.6.1" />
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>

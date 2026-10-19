@@ -6,11 +6,11 @@
 
     <!-- One place to bump the Critter Stack for the whole workshop. -->
     <PropertyGroup>
-        <MartenVersion>9.22.2</MartenVersion>
-        <WolverineVersion>6.24.4</WolverineVersion>
-        <PolecatVersion>5.9.1</PolecatVersion>
-        <CritterWatchVersion>1.0.0-rc.9</CritterWatchVersion>
-        <AspireVersion>13.4.6</AspireVersion>
+        <MartenVersion>9.50.3</MartenVersion>
+        <WolverineVersion>6.51.0</WolverineVersion>
+        <PolecatVersion>5.42.1</PolecatVersion>
+        <CritterWatchVersion>1.0.1</CritterWatchVersion>
+        <AspireVersion>13.6.1</AspireVersion>
     </PropertyGroup>
 
     <ItemGroup Label="Critter Stack">
@@ -33,17 +33,17 @@
     </ItemGroup>
 
     <ItemGroup Label="CritterWatch and Aspire">
-        <!-- Prerelease. Used only by the optional AppHost fleet for the
-             section 3 and section 7 demos; nothing else depends on them. -->
+        <!-- Used only by the optional AppHost fleet for the section 3 and
+             section 7 demos; nothing else depends on them. -->
         <PackageVersion Include="Wolverine.CritterWatch" Version="$(CritterWatchVersion)" />
         <PackageVersion Include="CritterWatch" Version="$(CritterWatchVersion)" />
         <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(AspireVersion)" />
     </ItemGroup>
 
     <ItemGroup Label="OpenTelemetry">
-        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
-        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
-        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.0" />
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.0" />
     </ItemGroup>
 
     <ItemGroup Label="Supporting">

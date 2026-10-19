@@ -564,17 +564,24 @@ concurrent warm-ups, and no knob to turn. Set it before you need it.
 
 <div class="pt-2"></div>
 
+Everything on the last three slides is in the version we are running today.
+The detail that matters is what it replaced:
+
+<div class="pt-4"></div>
+
 | | |
 |---|---|
-| `GateSideEffectsBehindPriorVersion` | shipped — in the version this workshop uses |
-| Non-blocking start, throttle, `ShardState` fields | newer |
+| Warm-up on a started agent | current |
+| `MaxConcurrentSideEffectGateWarmupsPerDatabase` | current |
+| `ShardState.SideEffectsSuppressed` / `SideEffectGateMark` | current |
 | `DaemonSettings.SideEffectGateTimeout` | **obsolete and ignored** |
 
 <div class="pt-5">
 
 The original shape ran the warm-up *inside* the agent start path, so a gated
 shard wasn't assignable until it finished — which looked exactly like a stuck
-deploy. If you are on an older build, that is what you'll see.
+deploy. If you are on an older build, that is what you will see, and the fix
+is to upgrade rather than to tune the timeout.
 
 </div>
 
